@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/smart_service_marketplace?createDatabaseIfNotExist=true
+    username: marketplace_user
+    password: password123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+
+jwt:
+  secret-key: 7e5b1d9d7b6a4c9f8e2a3b6c1d9e7f5b7a8c9d1e2f3a4b5c6d7e8f9a1b2c3d4e
+  expiration: 86400000
