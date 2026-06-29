@@ -8,7 +8,15 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "user_sessions")
+@Table(
+    name = "user_sessions",
+    indexes = {
+        @Index(
+            name = "idx_refresh_token",
+            columnList = "refresh_token"
+        )
+    }
+)
 @Getter
 @Setter
 @Builder
@@ -16,28 +24,65 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class UserSession extends BaseEntity {
 
-    @Column(nullable = false, unique = true, length = 512)
-    private String refreshToken;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+        name = "user_id",
+        nullable = false
+    )
     private User user;
 
-    @Column(nullable = false)
+
+    @Column(
+        name = "refresh_token",
+        nullable = false,
+        unique = true,
+        length = 512
+    )
+    private String refreshToken;
+
+
+    @Column(
+        nullable = false
+    )
     private LocalDateTime expiresAt;
 
-    @Column(nullable = false)
+
+    @Column(
+        nullable = false
+    )
     private LocalDateTime lastUsedAt;
 
-    @Column(nullable = false)
+
+    @Column(
+        nullable = false
+    )
     private boolean revoked;
 
-    @Column(nullable = false)
+
+    @Column(
+        length = 100
+    )
     private String deviceName;
 
-    @Column(nullable = false)
+
+    @Column(
+        length = 100
+    )
     private String ipAddress;
 
-    @Column(nullable = false)
+
+    @Column(
+        length = 500
+    )
     private String userAgent;
+
+
+    public boolean isExpired() {
+
+        return expiresAt.isBefore(
+            LocalDateTime.now()
+        );
+    }
+
 }

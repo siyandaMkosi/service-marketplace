@@ -8,7 +8,14 @@ import java.util.Optional;
 public interface UserSessionRepository
     extends JpaRepository<UserSession, Long> {
 
-    Optional<UserSession> findByRefreshToken(String refreshToken);
 
-    void deleteByRefreshToken(String refreshToken);
+    Optional<UserSession> findByRefreshToken(
+        String refreshToken
+    );
+
+
+    void deleteAllByUserId(
+        Long userId
+    );
+
 }
