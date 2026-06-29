@@ -5,49 +5,111 @@ import com.marketplace.auth.model.SessionMetadata;
 import com.marketplace.auth.repository.UserSessionRepository;
 import com.marketplace.security.jwt.JwtService;
 import com.marketplace.user.entity.User;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class SessionService {
 
+
     private static final long REFRESH_TOKEN_EXPIRY_DAYS = 30;
 
-    private final UserSessionRepository repository;
+
+    private final UserSessionRepository sessionRepository;
+
     private final JwtService jwtService;
 
-    public UserSession createSession(
-        User user,
-        SessionMetadata metadata
-    ) {
 
-        UserSession session = UserSession.builder()
 
-            .user(user)
+    /**
+     * Creates a new session after login
+     */
+    public UserSession createSession(User user, SessionMetadata metadata) {
 
-            .refreshToken(jwtService.generateRefreshToken())
+        UserSession session =
+            UserSession.builder()
+                .user(user)
+                .refreshToken(jwtService.generateRefreshToken())
+                .expiresAt(LocalDateTime.now().plusDays(REFRESH_TOKEN_EXPIRY_DAYS))
+                .lastUsedAt(LocalDateTime.now())
+                .revoked(false)
+                .deviceName(metadata.deviceName())
+                .ipAddress(metadata.ipAddress())
+                .userAgent(metadata.userAgent())
+                .build();
+        return sessionRepository.save(session);
 
-            .expiresAt(LocalDateTime.now().plusDays(30))
-
-            .lastUsedAt(LocalDateTime.now())
-
-            .revoked(false)
-
-            .ipAddress(metadata.ipAddress())
-
-            .userAgent(metadata.userAgent())
-
-            .deviceName(metadata.deviceName())
-
-            .build();
-
-        return repository.save(session);
     }
+
+
+
+
+    /**
+     * Validates a refresh token session
+     */
+    @Transactional
+    public UserSession validateSession(String refreshToken) {
+        UserSession session =
+            sessionRepository
+                .findByRefreshToken(refreshToken)
+                .orElseThrow(() ->
+                    new RuntimeException("Invalid refresh token")
+                );
+
+
+        if(session.isRevoked()) {
+            throw new RuntimeException("Session has been revoked");
+        }
+
+        if(session.isExpired()) {
+            throw new RuntimeException("Refresh token expired");
+        }
+
+        session.setLastUsedAt(LocalDateTime.now());
+
+        return session;
+
+    }
+
+
+
+
+
+    /**
+     * Revoke a single device/session
+     */
+    public void revokeSession(String refreshToken) {
+
+        UserSession session =
+            validateSession(refreshToken);
+        session.setRevoked(true);
+        sessionRepository.save(session);
+
+    }
+
+
+
+
+    /**
+     * Logout all devices
+     */
+    public void revokeAllSessions(Long userId) {
+
+        List<UserSession> sessions =
+            sessionRepository.findAllByUserId(userId);
+
+        sessions.forEach(session -> {
+            session.setRevoked(true);
+        });
+
+        sessionRepository.saveAll(sessions);
+    }
+
 
 }

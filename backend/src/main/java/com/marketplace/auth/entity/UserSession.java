@@ -61,7 +61,7 @@ public class UserSession extends BaseEntity {
 
 
     @Column(
-        length = 100
+        length = 255
     )
     private String deviceName;
 
@@ -72,9 +72,7 @@ public class UserSession extends BaseEntity {
     private String ipAddress;
 
 
-    @Column(
-        length = 500
-    )
+    @Column(length = 1000)
     private String userAgent;
 
 
