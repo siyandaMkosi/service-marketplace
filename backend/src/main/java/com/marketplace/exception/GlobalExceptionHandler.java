@@ -1,6 +1,9 @@
 package com.marketplace.exception;
 
+import com.marketplace.auth.exception.*;
 import com.marketplace.common.response.ApiErrorResponse;
+import com.marketplace.common.response.ApiResponse;
+import com.marketplace.common.response.ApiResponseBuilder;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,14 +23,11 @@ public class GlobalExceptionHandler {
         DuplicateResourceException ex,
         HttpServletRequest request
     ) {
-        ApiErrorResponse response = ApiErrorResponse.builder()
-            .timestamp(LocalDateTime.now())
-            .success(false)
-            .message(ex.getMessage())
-            .path(request.getRequestURI())
-            .build();
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        return buildErrorResponse(
+            HttpStatus.CONFLICT,
+            ex.getMessage(),
+            request
+        );
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -41,15 +41,11 @@ public class GlobalExceptionHandler {
             validationErrors.put(error.getField(), error.getDefaultMessage())
         );
 
-        ApiErrorResponse response = ApiErrorResponse.builder()
-            .timestamp(LocalDateTime.now())
-            .success(false)
-            .message("Validation failed")
-            .path(request.getRequestURI())
-            .errors(validationErrors)
-            .build();
-
-        return ResponseEntity.badRequest().body(response);
+        return buildErrorResponse(
+            HttpStatus.BAD_REQUEST,
+            ex.getMessage(),
+            request
+        );
     }
 
     @ExceptionHandler(Exception.class)
@@ -57,13 +53,37 @@ public class GlobalExceptionHandler {
         Exception ex,
         HttpServletRequest request
     ) {
-        ApiErrorResponse response = ApiErrorResponse.builder()
-            .timestamp(LocalDateTime.now())
-            .success(false)
-            .message("An unexpected error occurred")
-            .path(request.getRequestURI())
-            .build();
+        return buildErrorResponse(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            ex.getMessage(),
+            request
+        );
+    }
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiErrorResponse> handleAuthenticationException(
+        AuthenticationException ex,
+        HttpServletRequest request
+    ) {
+        return buildErrorResponse(
+            ex.getStatus(),
+            ex.getMessage(),
+            request
+        );
+    }
+
+    private ResponseEntity<ApiErrorResponse> buildErrorResponse(
+        HttpStatus status,
+        String message,
+        HttpServletRequest request
+    ) {
+
+        return ResponseEntity.status(status)
+            .body(ApiErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .success(false)
+                .message(message)
+                .path(request.getRequestURI())
+                .build());
     }
 }

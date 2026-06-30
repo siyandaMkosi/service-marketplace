@@ -1,6 +1,9 @@
 package com.marketplace.auth.service;
 
 import com.marketplace.auth.entity.UserSession;
+import com.marketplace.auth.exception.InvalidRefreshTokenException;
+import com.marketplace.auth.exception.SessionExpiredException;
+import com.marketplace.auth.exception.SessionRevokedException;
 import com.marketplace.auth.model.SessionMetadata;
 import com.marketplace.auth.repository.UserSessionRepository;
 import com.marketplace.security.jwt.JwtService;
@@ -58,17 +61,16 @@ public class SessionService {
         UserSession session =
             sessionRepository
                 .findByRefreshToken(refreshToken)
-                .orElseThrow(() ->
-                    new RuntimeException("Invalid refresh token")
+                .orElseThrow(InvalidRefreshTokenException::new
                 );
 
 
         if(session.isRevoked()) {
-            throw new RuntimeException("Session has been revoked");
+            throw new SessionRevokedException();
         }
 
         if(session.isExpired()) {
-            throw new RuntimeException("Refresh token expired");
+            throw new SessionExpiredException();
         }
 
         session.setLastUsedAt(LocalDateTime.now());
