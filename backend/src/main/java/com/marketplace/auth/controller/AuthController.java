@@ -1,9 +1,6 @@
 package com.marketplace.auth.controller;
 
-import com.marketplace.auth.dto.LoginRequest;
-import com.marketplace.auth.dto.LoginResponse;
-import com.marketplace.auth.dto.RegisterRequest;
-import com.marketplace.auth.dto.RegisterResponse;
+import com.marketplace.auth.dto.*;
 import com.marketplace.auth.facade.AuthFacade;
 import com.marketplace.common.response.ApiResponse;
 import com.marketplace.common.response.ApiResponseBuilder;
@@ -22,10 +19,7 @@ public class AuthController {
     private final AuthFacade authFacade;
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<RegisterResponse>> register(
-        @Valid @RequestBody RegisterRequest request,
-        HttpServletRequest servletRequest
-    ) {
+    public ResponseEntity<ApiResponse<RegisterResponse>> register(@Valid @RequestBody RegisterRequest request, HttpServletRequest servletRequest) {
 
         RegisterResponse response = authFacade.register(request);
 
@@ -53,6 +47,21 @@ public class AuthController {
                 "Login successful",
                 response,
                 servletRequest
+            )
+        );
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<LoginResponse>> refresh(@Valid @RequestBody RefreshTokenRequest request, HttpServletRequest httpRequest) {
+
+        LoginResponse response =
+            authFacade.refresh(request);
+
+        return ResponseEntity.ok(
+            ApiResponseBuilder.success(
+                "Token refreshed successfully",
+                response,
+                httpRequest
             )
         );
     }

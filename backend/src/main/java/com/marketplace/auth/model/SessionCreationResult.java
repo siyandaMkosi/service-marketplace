@@ -1,19 +1,15 @@
 package com.marketplace.auth.model;
 
 import com.marketplace.auth.entity.UserSession;
-import com.marketplace.user.entity.User;
 import lombok.Builder;
 import lombok.Getter;
 
-@Builder
-@Getter
-public class AuthenticationResult {
 
-    private User user;
+@Getter
+@Builder
+public class SessionCreationResult {
 
     private UserSession session;
-
-    private String accessToken;
 
     private String refreshToken;
 

@@ -37,7 +37,7 @@ public class UserSession extends BaseEntity {
         name = "refresh_token",
         nullable = false,
         unique = true,
-        length = 512
+        length = 64
     )
     private String refreshToken;
 
@@ -82,5 +82,6 @@ public class UserSession extends BaseEntity {
             LocalDateTime.now()
         );
     }
+
 
 }

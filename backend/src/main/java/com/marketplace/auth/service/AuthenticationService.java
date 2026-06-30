@@ -3,6 +3,7 @@ package com.marketplace.auth.service;
 import com.marketplace.auth.dto.LoginRequest;
 import com.marketplace.auth.entity.UserSession;
 import com.marketplace.auth.model.AuthenticationResult;
+import com.marketplace.auth.model.SessionCreationResult;
 import com.marketplace.auth.model.SessionMetadata;
 import com.marketplace.security.jwt.JwtService;
 import com.marketplace.user.entity.User;
@@ -49,17 +50,37 @@ public class AuthenticationService {
         String accessToken =
             jwtService.generateAccessToken(user);
 
-        UserSession session =
+        SessionCreationResult sessionResult =
             sessionService.createSession(user, metadata);
 
         return AuthenticationResult.builder()
 
             .user(user)
 
-            .session(session)
+            .session(sessionResult.getSession())
 
             .accessToken(accessToken)
+            .refreshToken(sessionResult.getRefreshToken())
+            .build();
+    }
 
+    @Transactional
+    public AuthenticationResult refresh(String refreshToken) {
+
+
+        UserSession session = sessionService.validateSession(refreshToken);
+
+        SessionCreationResult rotatedSession = sessionService.rotateSession(session);
+
+        User user = rotatedSession.getSession().getUser();
+
+        String accessToken = jwtService.generateAccessToken(user);
+
+        return AuthenticationResult.builder()
+            .user(user)
+            .session(rotatedSession.getSession())
+            .accessToken(accessToken)
+            .refreshToken(rotatedSession.getRefreshToken())
             .build();
     }
 }

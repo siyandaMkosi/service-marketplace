@@ -21,7 +21,7 @@ public interface AuthMapper {
 
     @Mapping(source = "accessToken", target = "accessToken")
 
-    @Mapping(source = "session.refreshToken", target = "refreshToken")
+    @Mapping(source = "refreshToken", target = "refreshToken")
 
     LoginResponse toLoginResponse(
         AuthenticationResult result);
