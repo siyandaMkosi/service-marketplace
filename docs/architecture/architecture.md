@@ -23,6 +23,16 @@ The application has been designed around the following principles:
 
 ---
 
+## Architecture Diagrams
+
+- [System Overview](../diagrams/system-overview.md)
+- [Authentication Flow](../diagrams/authentication-flow.md)
+- [Request Lifecycle](../diagrams/request-lifecycle.md)
+- [Package Structure](../diagrams/package-structure.md)
+- [Entity Relationships](../diagrams/entity-relationships.md)
+
+---
+
 # Architectural Style
 
 The project follows a layered architecture with package-by-feature organization.
