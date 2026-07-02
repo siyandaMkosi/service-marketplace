@@ -13,6 +13,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class AuthFacade {
@@ -27,31 +29,13 @@ public class AuthFacade {
     private final JwtService jwtService;
 
     public RegisterResponse register(RegisterRequest request) {
-
         User user = registrationService.register(request);
-
         return authMapper.toRegisterResponse(user);
     }
 
-    public LoginResponse login(
-
-        LoginRequest request,
-
-        HttpServletRequest httpRequest
-
-    ) {
-
-        SessionMetadata metadata =
-            metadataFactory.from(httpRequest);
-
-        AuthenticationResult session =
-            authenticationService.login(
-                request,
-                metadata
-            );
-
-        LoginResponse response =
-            authMapper.toLoginResponse(session);
+    public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
+        SessionMetadata metadata = metadataFactory.from(httpRequest);
+        AuthenticationResult session = authenticationService.login(request, metadata);
 
         return authMapper.toLoginResponse(session)
             .toBuilder()
@@ -62,14 +46,17 @@ public class AuthFacade {
     }
 
     public LoginResponse refresh(RefreshTokenRequest request) {
-
-        AuthenticationResult result =
-            authenticationService.refresh(
-                request.refreshToken()
-            );
-
+        AuthenticationResult result = authenticationService.refresh(request.refreshToken());
 
         return authMapper.toLoginResponse(result);
+    }
+
+    public void logout() {
+        authenticationService.logout();
+    }
+
+    public List<SessionResponse> getActiveSessions() {
+        return authenticationService.getActiveSessions();
     }
 
 }

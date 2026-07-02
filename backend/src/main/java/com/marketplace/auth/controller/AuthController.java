@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -34,13 +36,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> login(
-        @Valid @RequestBody LoginRequest request,
-        HttpServletRequest servletRequest
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request, HttpServletRequest servletRequest
     ) {
-
-        LoginResponse response =
-            authFacade.login(request, servletRequest);
+        LoginResponse response = authFacade.login(request, servletRequest);
 
         return ResponseEntity.ok(
             ApiResponseBuilder.success(
@@ -54,14 +52,39 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<LoginResponse>> refresh(@Valid @RequestBody RefreshTokenRequest request, HttpServletRequest httpRequest) {
 
-        LoginResponse response =
-            authFacade.refresh(request);
+        LoginResponse response = authFacade.refresh(request);
 
         return ResponseEntity.ok(
             ApiResponseBuilder.success(
                 "Token refreshed successfully",
                 response,
                 httpRequest
+            )
+        );
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
+
+        authFacade.logout();
+
+        return ResponseEntity.ok(
+            ApiResponseBuilder.success(
+                "Logged out successfully",
+                null,
+                request
+            )
+        );
+    }
+
+    @GetMapping("/sessions")
+    public ResponseEntity<ApiResponse<List<SessionResponse>>> getSessions(HttpServletRequest request) {
+
+        return ResponseEntity.ok(
+            ApiResponseBuilder.success(
+                "Active sessions retrieved successfully",
+                authFacade.getActiveSessions(),
+                request
             )
         );
     }

@@ -1,8 +1,10 @@
 package com.marketplace.security.filter;
 
+import com.marketplace.auth.service.SessionValidationService;
+import com.marketplace.common.enums.Role;
+import com.marketplace.security.CurrentUser;
 import com.marketplace.security.jwt.JwtService;
-import com.marketplace.user.entity.User;
-import com.marketplace.user.repository.UserRepository;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -24,7 +27,7 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserRepository userRepository;
+    private final SessionValidationService sessionValidationService;
 
     @Override
     protected void doFilterInternal(
@@ -41,26 +44,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         final String jwt = authHeader.substring(7);
-        final String userEmail = jwtService.extractUsername(jwt);
+        Claims claims = jwtService.extractAllClaims(jwt);
+        Long userId = ((Number) claims.get("userId")).longValue();
+        Long sessionId = ((Number) claims.get("sid")).longValue();
+        Role role = Role.valueOf(claims.get("role", String.class));
+        String email = claims.getSubject();
+        sessionValidationService.validate(sessionId);
 
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            User user = userRepository.findByEmail(userEmail)
-                .orElse(null);
+        if (!jwtService.isTokenValid(jwt)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-            if (user != null && jwtService.isTokenValid(jwt, user)) {
-                UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(
-                        user.getEmail(),
-                        null,
-                        List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
-                    );
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+            CurrentUser currentUser = CurrentUser.builder()
+                .userId(userId)
+                .sessionId(sessionId)
+                .email(email)
+                .role(role)
+                .build();
 
-                authToken.setDetails(
-                    new WebAuthenticationDetailsSource().buildDetails(request)
-                );
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(currentUser, null, authorities);
 
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
         filterChain.doFilter(request, response);

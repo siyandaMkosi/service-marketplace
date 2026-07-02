@@ -72,6 +72,18 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(SessionNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleSessionNotFound(
+        SessionNotFoundException ex,
+        HttpServletRequest request
+    ) {
+            return buildErrorResponse(
+            ex.getStatus(),
+            ex.getMessage(),
+            request
+        );
+    }
+
     private ResponseEntity<ApiErrorResponse> buildErrorResponse(
         HttpStatus status,
         String message,

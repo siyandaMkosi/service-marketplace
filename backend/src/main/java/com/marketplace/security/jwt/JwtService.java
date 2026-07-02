@@ -1,8 +1,11 @@
 package com.marketplace.security.jwt;
 
+import com.marketplace.auth.entity.UserSession;
+import com.marketplace.common.enums.Role;
 import com.marketplace.config.JwtProperties;
 import com.marketplace.user.entity.User;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
 
@@ -22,12 +26,13 @@ public class JwtService {
 
     private final SecureRandom secureRandom = new SecureRandom();
 
-    public String generateAccessToken(User user) {
+    public String generateAccessToken(User user, UserSession session) {
 
         return Jwts.builder()
             .subject(user.getEmail())
             .claim("userId", user.getId())
             .claim("role", user.getRole().name())
+            .claim("sid", session.getId())
             .issuedAt(new Date())
             .expiration(
                 new Date(
@@ -59,13 +64,18 @@ public class JwtService {
         return extractAllClaims(token).getSubject();
     }
 
-    public boolean isTokenValid(String token, User user) {
+    public boolean isTokenValid(String token) {
 
-        return extractUsername(token)
-            .equals(user.getEmail())
-            && !isExpired(token);
+        try {
+            Claims claims = extractAllClaims(token);
+
+            return claims.getExpiration().toInstant()
+                .isAfter(Instant.now());
+
+        } catch (JwtException | IllegalArgumentException ex) {
+            return false;
+        }
     }
-
     private boolean isExpired(String token) {
 
         return extractAllClaims(token)
@@ -73,7 +83,7 @@ public class JwtService {
             .before(new Date());
     }
 
-    private Claims extractAllClaims(String token) {
+    public Claims extractAllClaims(String token) {
 
         return Jwts.parser()
             .verifyWith(getSigningKey())
@@ -87,6 +97,29 @@ public class JwtService {
         return Keys.hmacShaKeyFor(
             jwtProperties.getSecretKey()
                 .getBytes(StandardCharsets.UTF_8)
+        );
+    }
+
+    public Long extractSessionId(String token) {
+
+        Claims claims = extractAllClaims(token);
+
+        return ((Number) claims.get("sid")).longValue();
+    }
+
+    public Long extractUserId(String token) {
+
+        Claims claims = extractAllClaims(token);
+
+        return ((Number) claims.get("userId")).longValue();
+    }
+
+    public Role extractRole(String token) {
+
+        Claims claims = extractAllClaims(token);
+
+        return Role.valueOf(
+            claims.get("role", String.class)
         );
     }
 }

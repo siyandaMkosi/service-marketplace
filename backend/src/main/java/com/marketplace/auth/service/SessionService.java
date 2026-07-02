@@ -1,9 +1,12 @@
 package com.marketplace.auth.service;
 
+import com.marketplace.auth.dto.SessionResponse;
 import com.marketplace.auth.entity.UserSession;
 import com.marketplace.auth.exception.InvalidRefreshTokenException;
 import com.marketplace.auth.exception.SessionExpiredException;
+import com.marketplace.auth.exception.SessionNotFoundException;
 import com.marketplace.auth.exception.SessionRevokedException;
+import com.marketplace.auth.mapper.AuthMapper;
 import com.marketplace.auth.model.SessionCreationResult;
 import com.marketplace.auth.model.SessionMetadata;
 import com.marketplace.auth.repository.UserSessionRepository;
@@ -32,16 +35,12 @@ public class SessionService {
 
     private final TokenHashService tokenHashService;
 
-
-    public SessionCreationResult createSession(
-        User user,
-        SessionMetadata metadata
-    ) {
+    private final AuthMapper authMapper;
 
 
-        String refreshToken =
-            jwtService.generateRefreshToken();
+    public SessionCreationResult createSession(User user, SessionMetadata metadata) {
 
+        String refreshToken = jwtService.generateRefreshToken();
 
         UserSession session =
             UserSession.builder()
@@ -67,14 +66,11 @@ public class SessionService {
 
     @Transactional
     public UserSession validateSession(String refreshToken) {
-        String hashedToken =
-            tokenHashService.hash(refreshToken);
-        UserSession session =
-            sessionRepository
+        String hashedToken = tokenHashService.hash(refreshToken);
+        UserSession session = sessionRepository
                 .findByRefreshToken(hashedToken)
                 .orElseThrow(InvalidRefreshTokenException::new
                 );
-
 
         if(session.isRevoked()) {
             throw new SessionRevokedException();
@@ -92,9 +88,7 @@ public class SessionService {
 
 
     public void revokeSession(String refreshToken) {
-
-        UserSession session =
-            validateSession(refreshToken);
+        UserSession session = validateSession(refreshToken);
         session.setRevoked(true);
         sessionRepository.save(session);
 
@@ -103,10 +97,7 @@ public class SessionService {
 
 
     public void revokeAllSessions(Long userId) {
-
-        List<UserSession> sessions =
-            sessionRepository.findAllByUserId(userId);
-
+        List<UserSession> sessions = sessionRepository.findAllByUserId(userId);
         sessions.forEach(session -> {
             session.setRevoked(true);
         });
@@ -116,68 +107,51 @@ public class SessionService {
 
     @Transactional
     public SessionCreationResult rotateSession(UserSession currentSession) {
-
-
         currentSession.setRevoked(true);
-
         sessionRepository.save(currentSession);
 
+        String newRefreshToken = jwtService.generateRefreshToken();
 
-
-        String newRefreshToken =
-            jwtService.generateRefreshToken();
-
-
-
-        UserSession newSession =
-            UserSession.builder()
-
-                .user(currentSession.getUser())
-
-                .refreshToken(
-                    tokenHashService.hash(
-                        newRefreshToken
-                    )
-                )
-
-                .revoked(false)
-
-                .expiresAt(
-                    LocalDateTime.now()
-                        .plusDays(30)
-                )
-
-                .lastUsedAt(
-                    LocalDateTime.now()
-                )
-
-                .deviceName(
-                    currentSession.getDeviceName()
-                )
-
-                .ipAddress(
-                    currentSession.getIpAddress()
-                )
-
-                .userAgent(
-                    currentSession.getUserAgent()
-                )
-
-                .build();
-
-
+        UserSession newSession = UserSession.builder()
+            .user(currentSession.getUser())
+            .refreshToken(tokenHashService.hash(newRefreshToken))
+            .revoked(false)
+            .expiresAt(LocalDateTime.now().plusDays(30))
+            .lastUsedAt(LocalDateTime.now())
+            .deviceName(currentSession.getDeviceName())
+            .ipAddress(currentSession.getIpAddress())
+            .userAgent(currentSession.getUserAgent())
+            .build();
 
         sessionRepository.save(newSession);
 
-
-
         return SessionCreationResult.builder()
-
             .session(newSession)
-
             .refreshToken(newRefreshToken)
-
             .build();
+    }
+
+    @Transactional
+    public void logout(Long sessionId) {
+        UserSession session = sessionRepository.findByIdAndRevokedFalse(sessionId)
+                .orElseThrow(SessionNotFoundException::new);
+
+        session.setRevoked(true);
+
+        sessionRepository.save(session);
+    }
+
+    public List<SessionResponse> getActiveSessions(Long userId, Long currentSessionId) {
+
+        return sessionRepository
+            .findAllByUserIdAndRevokedFalseOrderByLastUsedAtDesc(userId)
+            .stream()
+            .map(session -> {
+                SessionResponse response = authMapper.toSessionResponse(session);
+                response.setCurrent(session.getId().equals(currentSessionId));
+                return response;
+            })
+            .toList();
     }
 
 
