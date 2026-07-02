@@ -7,6 +7,7 @@ import com.marketplace.auth.exception.SessionExpiredException;
 import com.marketplace.auth.exception.SessionNotFoundException;
 import com.marketplace.auth.exception.SessionRevokedException;
 import com.marketplace.auth.mapper.AuthMapper;
+import com.marketplace.auth.mapper.SessionMapper;
 import com.marketplace.auth.model.SessionCreationResult;
 import com.marketplace.auth.model.SessionMetadata;
 import com.marketplace.auth.repository.UserSessionRepository;
@@ -36,6 +37,8 @@ public class SessionService {
     private final TokenHashService tokenHashService;
 
     private final AuthMapper authMapper;
+
+    private final SessionMapper sessionMapper;
 
 
     public SessionCreationResult createSession(User user, SessionMetadata metadata) {
@@ -147,11 +150,10 @@ public class SessionService {
             .findAllByUserIdAndRevokedFalseOrderByLastUsedAtDesc(userId)
             .stream()
             .map(session -> {
-                SessionResponse response = authMapper.toSessionResponse(session);
+                SessionResponse response = sessionMapper.toResponse(session);
                 response.setCurrent(session.getId().equals(currentSessionId));
                 return response;
-            })
-            .toList();
+            }).toList();
     }
 
 
