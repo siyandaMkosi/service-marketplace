@@ -79,4 +79,22 @@ public class AuthenticationService {
     public List<SessionResponse> getActiveSessions() {
         return sessionService.getActiveSessions(currentUserService.getCurrentUserId(), currentUserService.getCurrentSessionId());
     }
+
+    @Transactional
+    public void logoutSession(Long sessionId) {
+
+        sessionService.revokeSession(
+            currentUserService.getCurrentUserId(),
+            currentUserService.getCurrentSessionId(),
+            sessionId
+        );
+    }
+
+    @Transactional
+    public void logoutAll() {
+
+        sessionService.logoutAll(
+            currentUserService.getCurrentUserId()
+        );
+    }
 }

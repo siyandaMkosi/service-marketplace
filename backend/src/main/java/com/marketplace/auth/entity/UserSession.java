@@ -83,5 +83,10 @@ public class UserSession extends BaseEntity {
         );
     }
 
+    public void revoke() {
+        this.revoked = true;
+        this.lastUsedAt = LocalDateTime.now();
+    }
+
 
 }

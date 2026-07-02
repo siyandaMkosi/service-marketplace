@@ -21,7 +21,7 @@ public class SessionValidationService {
     public UserSession validate(Long sessionId) {
 
         UserSession session = sessionRepository.findById(sessionId)
-            .orElseThrow(() -> new SessionNotFoundException());
+            .orElseThrow(() -> new SessionNotFoundException(sessionId));
 
         if (session.isRevoked()) {
             throw new SessionRevokedException();

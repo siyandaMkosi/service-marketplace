@@ -64,7 +64,9 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Void>> logout(
+        HttpServletRequest request
+    ) {
 
         authFacade.logout();
 
@@ -84,6 +86,33 @@ public class AuthController {
             ApiResponseBuilder.success(
                 "Active sessions retrieved successfully",
                 authFacade.getActiveSessions(),
+                request
+            )
+        );
+    }
+
+    @DeleteMapping("/sessions/{sessionId}")
+    public ResponseEntity<ApiResponse<Void>> logoutSession(@PathVariable Long sessionId, HttpServletRequest request
+    ) {
+
+        authFacade.logoutSession(sessionId);
+
+        return ResponseEntity.ok(
+            ApiResponseBuilder.success(
+                "Session logged out successfully.",
+                null,
+                request
+            )
+        );
+    }
+
+    @PostMapping("/logout-all")
+    public ResponseEntity<ApiResponse<Void>> logoutAll(HttpServletRequest request) {
+        authFacade.logoutAll();
+        return ResponseEntity.ok(
+            ApiResponseBuilder.success(
+                "Logged out from all devices successfully.",
+                null,
                 request
             )
         );

@@ -2,11 +2,7 @@ package com.marketplace.auth.service;
 
 import com.marketplace.auth.dto.SessionResponse;
 import com.marketplace.auth.entity.UserSession;
-import com.marketplace.auth.exception.InvalidRefreshTokenException;
-import com.marketplace.auth.exception.SessionExpiredException;
-import com.marketplace.auth.exception.SessionNotFoundException;
-import com.marketplace.auth.exception.SessionRevokedException;
-import com.marketplace.auth.mapper.AuthMapper;
+import com.marketplace.auth.exception.*;
 import com.marketplace.auth.mapper.SessionMapper;
 import com.marketplace.auth.model.SessionCreationResult;
 import com.marketplace.auth.model.SessionMetadata;
@@ -26,17 +22,11 @@ import java.util.List;
 @Transactional
 public class SessionService {
 
-
-    private static final long REFRESH_TOKEN_EXPIRY_DAYS = 30;
-
-
     private final UserSessionRepository sessionRepository;
 
     private final JwtService jwtService;
 
     private final TokenHashService tokenHashService;
-
-    private final AuthMapper authMapper;
 
     private final SessionMapper sessionMapper;
 
@@ -139,9 +129,7 @@ public class SessionService {
         UserSession session = sessionRepository.findByIdAndRevokedFalse(sessionId)
                 .orElseThrow(SessionNotFoundException::new);
 
-        session.setRevoked(true);
-
-        sessionRepository.save(session);
+        session.revoke();
     }
 
     public List<SessionResponse> getActiveSessions(Long userId, Long currentSessionId) {
@@ -156,5 +144,30 @@ public class SessionService {
             }).toList();
     }
 
+    @Transactional
+    public void revokeSession(Long currentUserId, Long currentSessionId, Long targetSessionId) {
+
+        UserSession session = sessionRepository.findById(targetSessionId).orElseThrow(() ->
+                new SessionNotFoundException(targetSessionId));
+
+        if (!session.getUser().getId().equals(currentUserId)) {
+            throw new SessionNotFoundException(targetSessionId);
+        }
+
+        if (session.getId().equals(currentSessionId)) {
+            throw new CannotRevokeCurrentSessionException();
+        }
+
+        session.revoke();
+    }
+
+    @Transactional
+    public void logoutAll(Long userId) {
+
+        List<UserSession> sessions =
+            sessionRepository.findAllByUserIdAndRevokedFalse(userId);
+
+        sessions.forEach(UserSession::revoke);
+    }
 
 }

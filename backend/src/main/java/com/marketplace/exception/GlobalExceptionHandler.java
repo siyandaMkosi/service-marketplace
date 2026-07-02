@@ -84,6 +84,19 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(CannotRevokeCurrentSessionException.class)
+    public ResponseEntity<ApiErrorResponse> handleCannotRevokeCurrentSession(
+        CannotRevokeCurrentSessionException ex,
+        HttpServletRequest request
+    ) {
+
+        return buildErrorResponse(
+            ex.getStatus(),
+            ex.getMessage(),
+            request
+        );
+    }
+
     private ResponseEntity<ApiErrorResponse> buildErrorResponse(
         HttpStatus status,
         String message,

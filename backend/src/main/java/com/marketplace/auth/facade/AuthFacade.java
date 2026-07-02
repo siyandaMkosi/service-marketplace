@@ -59,4 +59,12 @@ public class AuthFacade {
         return authenticationService.getActiveSessions();
     }
 
+    public void logoutSession(Long sessionId) {
+        authenticationService.logoutSession(sessionId);
+    }
+
+    public void logoutAll() {
+        authenticationService.logoutAll();
+    }
+
 }
