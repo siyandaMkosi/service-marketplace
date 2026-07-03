@@ -51,6 +51,17 @@ Transform the authentication module into a production-ready authentication syste
 * List active devices
 * Revoke individual sessions
 
+## Sprint 2.3.1 – Active Session Management
+
+### Completed
+
+- Added `GET /api/auth/sessions`
+- Implemented `SessionMapper`
+- Introduced `CurrentUserService`
+- Added `SessionValidationService`
+- Refactored authentication flow to use `CurrentUser`
+- Display active sessions for the authenticated user
+- Identify the current session in the response
 ---
 
 ## Sprint Outcome
