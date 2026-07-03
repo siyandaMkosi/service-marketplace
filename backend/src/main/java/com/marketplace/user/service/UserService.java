@@ -1,5 +1,6 @@
 package com.marketplace.user.service;
 
+import com.marketplace.security.CurrentUserService;
 import com.marketplace.user.dto.UserProfileResponse;
 import com.marketplace.user.entity.User;
 import com.marketplace.user.mapper.UserMapper;
@@ -14,13 +15,11 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final CurrentUserService currentUserService;
 
-    public UserProfileResponse getCurrentUser(Authentication authentication) {
-        String email = authentication.getName();
+    public UserProfileResponse getCurrentUser() {
 
-        User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
-
+        User user = currentUserService.requireCurrentUser();
         return userMapper.toUserProfileResponse(user);
     }
 }

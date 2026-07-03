@@ -19,10 +19,9 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserProfileResponse>> getCurrentUser(
-        Authentication authentication,
         HttpServletRequest servletRequest
     ) {
-        UserProfileResponse response = userService.getCurrentUser(authentication);
+        UserProfileResponse response = userService.getCurrentUser();
 
         return ResponseEntity.ok(
             ApiResponseBuilder.success(
