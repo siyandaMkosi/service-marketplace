@@ -1,6 +1,7 @@
 package com.marketplace.provider.service;
 
 import com.marketplace.provider.dto.request.ProviderRegistrationRequest;
+import com.marketplace.provider.dto.request.ProviderUpdateRequest;
 import com.marketplace.provider.dto.response.ProviderResponse;
 import com.marketplace.provider.entity.Provider;
 import com.marketplace.provider.exception.ProviderAlreadyExistsException;
@@ -21,36 +22,38 @@ public class ProviderService {
 
     private final ProviderRepository providerRepository;
 
-    private final UserRepository userRepository;
-
     private final CurrentUserService currentUserService;
 
     private final ProviderMapper providerMapper;
 
     @Transactional
-    public ProviderResponse becomeProvider(
-        ProviderRegistrationRequest request
-    ) {
-
+    public ProviderResponse becomeProvider(ProviderRegistrationRequest request) {
         User user = currentUserService.requireCurrentUser();
 
         Provider provider = providerMapper.toEntity(request);
-
         provider.assignUser(user);
 
         Provider savedProvider = providerRepository.save(provider);
-
         return providerMapper.toResponse(savedProvider);
     }
 
     @Transactional(readOnly = true)
     public ProviderResponse getCurrentProvider() {
+        return providerMapper.toResponse(requireCurrentProvider());
+    }
 
+    @Transactional
+    public ProviderResponse updateProvider(ProviderUpdateRequest request) {
+        Provider provider = requireCurrentProvider();
+        providerMapper.updateProvider(request, provider);
+        Provider updatedProvider = providerRepository.save(provider);
+
+        return providerMapper.toResponse(updatedProvider);
+    }
+
+    private Provider requireCurrentProvider() {
         User currentUser = currentUserService.requireCurrentUser();
-
-        Provider provider = providerRepository.findByUserId(currentUser.getId())
+        return providerRepository.findByUserId(currentUser.getId())
             .orElseThrow(ProviderNotFoundException::new);
-
-        return providerMapper.toResponse(provider);
     }
 }

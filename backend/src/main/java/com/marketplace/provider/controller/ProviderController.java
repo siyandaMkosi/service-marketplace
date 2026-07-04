@@ -3,6 +3,7 @@ package com.marketplace.provider.controller;
 import com.marketplace.common.response.ApiResponse;
 import com.marketplace.common.response.ApiResponseBuilder;
 import com.marketplace.provider.dto.request.ProviderRegistrationRequest;
+import com.marketplace.provider.dto.request.ProviderUpdateRequest;
 import com.marketplace.provider.dto.response.ProviderResponse;
 import com.marketplace.provider.facade.ProviderFacade;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,18 +36,28 @@ public class ProviderController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<ProviderResponse>> getMyProfile(
-        HttpServletRequest request
-    ) {
+    public ResponseEntity<ApiResponse<ProviderResponse>> getMyProfile(HttpServletRequest request) {
 
-        ProviderResponse response =
-            providerFacade.getCurrentProvider();
+        ProviderResponse response = providerFacade.getCurrentProvider();
 
         return ResponseEntity.ok(
             ApiResponseBuilder.success(
                 "Provider profile retrieved successfully.",
                 response,
                 request
+            )
+        );
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<ApiResponse<ProviderResponse>> updateProvider(@Valid @RequestBody ProviderUpdateRequest request, HttpServletRequest httpRequest) {
+        ProviderResponse response = providerFacade.updateProvider(request);
+
+        return ResponseEntity.ok(
+            ApiResponseBuilder.success(
+                "Provider profile updated successfully.",
+                response,
+                httpRequest
             )
         );
     }

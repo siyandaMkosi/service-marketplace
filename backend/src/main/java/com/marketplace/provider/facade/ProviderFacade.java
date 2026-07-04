@@ -1,6 +1,7 @@
 package com.marketplace.provider.facade;
 
 import com.marketplace.provider.dto.request.ProviderRegistrationRequest;
+import com.marketplace.provider.dto.request.ProviderUpdateRequest;
 import com.marketplace.provider.dto.response.ProviderResponse;
 import com.marketplace.provider.service.ProviderService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,10 @@ public class ProviderFacade {
 
     public ProviderResponse getCurrentProvider() {
         return providerService.getCurrentProvider();
+    }
+
+    public ProviderResponse updateProvider(ProviderUpdateRequest request) {
+        return providerService.updateProvider(request);
     }
 
 }
