@@ -10,15 +10,14 @@ import org.mapstruct.*;
 
 @Mapper(
     componentModel = "spring",
-    unmappedTargetPolicy = ReportingPolicy.IGNORE
+    unmappedTargetPolicy = ReportingPolicy.IGNORE,
+    uses = ServiceCategoryMapper.class
 )
 public interface ServiceOfferingMapper {
 
     ServiceOffering toEntity(ServiceOfferingCreateRequest request);
 
     ServiceOfferingResponse toResponse(ServiceOffering serviceOffering);
-
-    ServiceCategoryResponse toResponse(ServiceCategory category);
 
     @BeanMapping(
         nullValuePropertyMappingStrategy =

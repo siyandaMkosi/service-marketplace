@@ -4,6 +4,7 @@ package com.marketplace.service.repository;
 import com.marketplace.service.entity.ServiceCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ServiceCategoryRepository
@@ -14,5 +15,7 @@ public interface ServiceCategoryRepository
     Optional<ServiceCategory> findByName(String name);
 
     boolean existsByCode(String code);
+
+    List<ServiceCategory> findAllByActiveTrueOrderByNameAsc();
 
 }

@@ -1,6 +1,7 @@
 package com.marketplace.service.repository;
 
 import com.marketplace.provider.entity.Provider;
+import com.marketplace.service.entity.ServiceCategory;
 import com.marketplace.service.entity.ServiceOffering;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -12,18 +13,12 @@ public interface ServiceOfferingRepository
 
     List<ServiceOffering> findAllByProvider(Provider provider);
 
-    Optional<ServiceOffering> findByIdAndProvider(
-        Long id,
-        Provider provider
-    );
+    Optional<ServiceOffering> findByIdAndProvider(Long id, Provider provider);
 
-    boolean existsByProviderAndName(
-        Provider provider,
-        String name
-    );
+    boolean existsByProviderAndName(Provider provider, String name);
 
-    List<ServiceOffering> findAllByProviderAndActiveTrue(
-        Provider provider
-    );
+    List<ServiceOffering> findAllByProviderAndActiveTrue(Provider provider);
+
+    List<ServiceOffering> findAllByActiveTrueOrderByNameAsc();
 
 }

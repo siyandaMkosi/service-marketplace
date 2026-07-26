@@ -51,6 +51,14 @@ public class SecurityConfig {
                     "/actuator/**",
                     "/error"
                 ).permitAll()
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/categories/**"
+                ).permitAll()
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/marketplace/**"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
