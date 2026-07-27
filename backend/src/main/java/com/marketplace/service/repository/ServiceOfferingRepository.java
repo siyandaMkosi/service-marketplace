@@ -21,4 +21,6 @@ public interface ServiceOfferingRepository
 
     List<ServiceOffering> findAllByActiveTrueOrderByNameAsc();
 
+    Optional<ServiceOffering> findByIdAndActiveTrue(Long id);
+
 }
