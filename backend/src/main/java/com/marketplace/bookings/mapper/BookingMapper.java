@@ -12,6 +12,10 @@ public interface BookingMapper {
         target = "providerBusinessName",
         source = "provider.businessName"
     )
+    @Mapping(
+        target = "customerFullName",
+        expression = "java(booking.getCustomer().getFirstName() + \" \" + booking.getCustomer().getLastName())"
+    )
     BookingResponse toResponse(Booking booking);
 
 }

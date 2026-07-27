@@ -17,4 +17,5 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     boolean existsByProviderAndStatusAndScheduledStartLessThanAndScheduledEndGreaterThan(Provider provider, BookingStatus status, LocalDateTime scheduledEnd, LocalDateTime scheduledStart);
 
+    List<Booking> findAllByProviderAndStatusOrderByCreatedAtAsc(Provider provider, BookingStatus status);
 }

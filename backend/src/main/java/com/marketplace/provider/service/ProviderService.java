@@ -39,6 +39,10 @@ public class ProviderService {
         return providerMapper.toResponse(requireCurrentProvider());
     }
 
+    @Transactional(readOnly = true)
+    public Provider getCurrentProviderEntity() {
+        return requireCurrentProvider();
+    }
     @Transactional
     public ProviderResponse updateProvider(ProviderUpdateRequest request) {
         Provider provider = requireCurrentProvider();

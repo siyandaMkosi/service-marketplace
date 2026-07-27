@@ -26,4 +26,12 @@ public class BookingResponse {
 
     private String providerBusinessName;
 
+    //FOR PROVIDER VIEW
+    private String customerFullName;
+    private String customerNotes;
+
+    //FOR REJECTION PURPOSES
+    private String rejectionReason;
+
+
 }
