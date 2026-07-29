@@ -123,12 +123,10 @@ public class  BookingCommandService {
 
     private void validatePaymentNotReceived(Booking booking) {
 
-        if (booking.hasPayment()) {
-
+        if (booking.hasPayment() && booking.hasPaid()) {
             throw new BookingCancellationNotAllowedException(
                 "Bookings with completed payment require administrator intervention."
             );
-
         }
 
     }

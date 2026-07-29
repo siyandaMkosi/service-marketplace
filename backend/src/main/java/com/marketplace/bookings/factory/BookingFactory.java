@@ -29,15 +29,13 @@ public class  BookingFactory {
             .preferredTimeWindow(request.getPreferredTimeWindow())
             .customerNotes(request.getCustomerNotes())
             .status(BookingStatus.PENDING)
-            .paymentStatus(PaymentStatus.NOT_REQUIRED)
             .providerConfirmedTime(false);
 
         return builder.build();
 
     }
 
-    private void copyServiceSnapshot(Booking.BookingBuilder builder, ServiceOffering offering
-    ) {
+    private void copyServiceSnapshot(Booking.BookingBuilder builder, ServiceOffering offering) {
 
         builder.serviceName(offering.getName())
             .serviceDescription(offering.getDescription())

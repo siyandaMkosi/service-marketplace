@@ -4,6 +4,7 @@ import com.marketplace.bookings.enums.BookingStatus;
 import com.marketplace.bookings.enums.BookingTimeWindow;
 import com.marketplace.bookings.enums.PaymentStatus;
 import com.marketplace.common.entity.BaseEntity;
+import com.marketplace.payment.entity.Payment;
 import com.marketplace.provider.entity.Provider;
 import com.marketplace.service.entity.ServiceOffering;
 import com.marketplace.user.entity.User;
@@ -62,10 +63,6 @@ public class Booking extends BaseEntity {
     @Column(nullable = false)
     private BookingStatus status;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private PaymentStatus paymentStatus;
-
     @Column(length = 3000)
     private String customerNotes;
 
@@ -84,6 +81,12 @@ public class Booking extends BaseEntity {
     private LocalDateTime cancelledAt;
 
     private LocalDateTime completedAt;
+
+    @OneToOne(
+            mappedBy = "booking",
+            cascade = CascadeType.ALL
+    )
+    private Payment payment;
 
     public void accept(LocalDateTime scheduledStart, LocalDateTime scheduledEnd, String providerNotes) {
 
@@ -149,12 +152,6 @@ public class Booking extends BaseEntity {
 
     }
 
-    public boolean hasPayment() {
-
-        return paymentStatus == PaymentStatus.PAID;
-
-    }
-
     public boolean hasProviderConfirmedTime() {
 
         return providerConfirmedTime;
@@ -167,10 +164,26 @@ public class Booking extends BaseEntity {
             return Duration.ZERO;
         }
 
-        return Duration.between(
-            scheduledStart,
-            scheduledEnd
-        );
+        return Duration.between(scheduledStart, scheduledEnd);
+    }
+
+    public boolean hasPayment() {
+        return payment != null;
+    }
+
+    public boolean hasPaid() {
+        return payment != null && payment.isPaid();
+    }
+
+    public Payment getPaymentOrThrow() {
+
+        if (payment == null) {
+            throw new IllegalStateException(
+                    "Booking has no payment."
+            );
+        }
+
+        return payment;
 
     }
 }
