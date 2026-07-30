@@ -3,6 +3,7 @@ package com.marketplace.payment.service.command;
 import com.marketplace.bookings.entity.Booking;
 import com.marketplace.bookings.repository.BookingRepository;
 import com.marketplace.bookings.exception.BookingNotFoundException;
+import com.marketplace.finance.ledger.service.command.LedgerCommandService;
 import com.marketplace.payment.dto.request.PaymentRequest;
 import com.marketplace.payment.dto.response.PaymentResponse;
 import com.marketplace.payment.entity.Payment;
@@ -30,6 +31,7 @@ public class  PaymentCommandService {
     private final PaymentFactory paymentFactory;
     private final PaymentMapper paymentMapper;
     private final PaymentGateway paymentGateway;
+    private final LedgerCommandService ledgerCommandService;
     public PaymentResponse createPayment(Long bookingId, PaymentRequest request) {
 
         Booking booking = getBooking(bookingId);
@@ -64,18 +66,26 @@ public class  PaymentCommandService {
 
         PaymentGatewayVerificationResponse verification = paymentGateway.verifyPayment(transactionReference);
 
-        if (payment.isPaid()) {
-            payment.markPaid(verification.getGatewayReference());
-
-        } else {
-
-            payment.markFailed(verification.getMessage());
-
-        }
+        applyVerificationResult(payment, verification);
 
         Payment savedPayment = paymentRepository.save(payment);
 
+        if (savedPayment.isPaid()) {
+            ledgerCommandService.recordIncome(savedPayment);
+        }
+
         return paymentMapper.toResponse(savedPayment);
+
+    }
+
+    private void applyVerificationResult(Payment payment, PaymentGatewayVerificationResponse verification) {
+
+        if (verification.getPaymentStatus() == PaymentStatus.PAID) {
+            payment.markPaid(verification.getGatewayReference());
+            return;
+        }
+
+        payment.markFailed(verification.getMessage());
 
     }
 

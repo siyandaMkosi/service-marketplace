@@ -1,6 +1,7 @@
 package com.marketplace.payment.factory;
 
 import com.marketplace.bookings.entity.Booking;
+import com.marketplace.common.reference.ReferenceGenerator;
 import com.marketplace.payment.entity.Payment;
 import com.marketplace.payment.enums.PaymentGatewayType;
 import com.marketplace.payment.enums.PaymentMethod;
@@ -15,6 +16,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class  PaymentFactory {
 
+    private final ReferenceGenerator referenceGenerator;
+
     public Payment create(Booking booking, PaymentMethod paymentMethod) {
 
         return Payment.builder()
@@ -26,19 +29,8 @@ public class  PaymentFactory {
             .status(PaymentStatus.PENDING)
             .paymentMethod(paymentMethod)
             .gateway(PaymentGatewayType.MOCK)
-            .transactionReference(generateTransactionReference())
+            .transactionReference(referenceGenerator.generatePaymentReference())
             .build();
-
-    }
-
-    private String generateTransactionReference() {
-
-        return "PAY-" +
-            UUID.randomUUID()
-                .toString()
-                .replace("-", "")
-                .substring(0, 16)
-                .toUpperCase();
 
     }
 
