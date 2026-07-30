@@ -1,6 +1,7 @@
 package com.marketplace.finance.ledger.service.query;
 
 import com.marketplace.finance.ledger.dto.response.LedgerEntryResponse;
+import com.marketplace.finance.ledger.entity.LedgerEntry;
 import com.marketplace.finance.ledger.mapper.LedgerMapper;
 import com.marketplace.finance.ledger.repository.LedgerEntryRepository;
 import com.marketplace.provider.entity.Provider;
@@ -30,6 +31,14 @@ public class  LedgerQueryService {
             .stream()
             .map(ledgerMapper::toResponse)
             .toList();
+
+    }
+
+    public List<LedgerEntry> getCurrentProviderLedgerEntries() {
+
+        Provider provider = providerFacade.findCurrentProvider();
+
+        return ledgerEntryRepository.findAllByProviderOrderByOccurredAtDesc(provider);
 
     }
 

@@ -1,15 +1,22 @@
 package com.marketplace.finance.ledger.enums;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public enum LedgerEntryType {
 
-    INCOME,
+    INCOME(LedgerDirection.CREDIT),
 
-    COMMISSION,
+    COMMISSION(LedgerDirection.DEBIT),
 
-    PAYOUT,
+    PAYOUT(LedgerDirection.DEBIT),
 
-    REFUND,
+    REFUND(LedgerDirection.DEBIT),
 
-    ADJUSTMENT
+    ADJUSTMENT(LedgerDirection.CREDIT);
+
+    private final LedgerDirection direction;
 
 }
