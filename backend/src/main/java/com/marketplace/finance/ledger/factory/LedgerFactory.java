@@ -3,6 +3,7 @@ package com.marketplace.finance.ledger.factory;
 import com.marketplace.common.reference.ReferenceGenerator;
 import com.marketplace.finance.ledger.entity.LedgerEntry;
 import com.marketplace.finance.ledger.enums.LedgerEntryType;
+import com.marketplace.finance.payout.entity.Payout;
 import com.marketplace.payment.entity.Payment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,19 @@ public class  LedgerFactory {
             .entryType(LedgerEntryType.INCOME)
             .reference(referenceGenerator.generateLedgerReference())
             .description(buildIncomeDescription(payment))
+            .occurredAt(LocalDateTime.now())
+            .build();
+
+    }
+
+    public LedgerEntry createPayoutEntry(Payout payout) {
+
+        return LedgerEntry.builder()
+            .provider(payout.getProvider())
+            .entryType(LedgerEntryType.PAYOUT)
+            .amount(payout.getAmount())
+            .reference(payout.getPayoutReference())
+            .description("Provider payout")
             .occurredAt(LocalDateTime.now())
             .build();
 

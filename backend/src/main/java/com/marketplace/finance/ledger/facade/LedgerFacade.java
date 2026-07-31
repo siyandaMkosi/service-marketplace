@@ -2,6 +2,7 @@ package com.marketplace.finance.ledger.facade;
 
 import com.marketplace.finance.ledger.dto.response.LedgerEntryResponse;
 import com.marketplace.finance.ledger.service.LedgerService;
+import com.marketplace.finance.payout.entity.Payout;
 import com.marketplace.payment.entity.Payment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,12 @@ public class LedgerFacade {
     public void recordIncome(Payment payment) {
 
         ledgerService.recordIncome(payment);
+
+    }
+
+    public void recordPayout(Payout payout) {
+
+        ledgerService.recordPayout(payout);
 
     }
 

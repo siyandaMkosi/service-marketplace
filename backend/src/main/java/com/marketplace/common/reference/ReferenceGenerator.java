@@ -30,4 +30,15 @@ public class ReferenceGenerator {
             .toUpperCase();
 
     }
+
+    public String generatePayoutReference() {
+
+        return "PO-"
+            + UUID.randomUUID()
+            .toString()
+            .replace("-", "")
+            .substring(0, 16)
+            .toUpperCase();
+
+    }
 }

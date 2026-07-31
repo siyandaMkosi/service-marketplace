@@ -3,6 +3,7 @@ package com.marketplace.finance.ledger.service;
 import com.marketplace.finance.ledger.dto.response.LedgerEntryResponse;
 import com.marketplace.finance.ledger.service.command.LedgerCommandService;
 import com.marketplace.finance.ledger.service.query.LedgerQueryService;
+import com.marketplace.finance.payout.entity.Payout;
 import com.marketplace.payment.entity.Payment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,10 @@ public class LedgerService {
 
         commandService.recordIncome(payment);
 
+    }
+
+    public void recordPayout(Payout payout) {
+        commandService.recordPayout(payout);
     }
 
     public List<LedgerEntryResponse> getCurrentProviderLedger() {
